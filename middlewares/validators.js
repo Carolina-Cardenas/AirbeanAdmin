@@ -70,3 +70,45 @@ export function validateProductBody(req, res, next) {
 
   next();
 }
+
+export function validateUpdateProductBody(req, res, next) {
+  const { title, desc, price } = req.body;
+
+  // Al menos uno de los campos debe estar presente
+  if (!title && !desc && !price) {
+    return next({
+      status: 400,
+      message: "At least one field (title, desc, price) must be provided",
+    });
+  }
+
+  // Validar campos si están presentes
+  if (
+    title !== undefined &&
+    (typeof title !== "string" || title.trim().length === 0)
+  ) {
+    return next({
+      status: 400,
+      message: "Title must be a non-empty string",
+    });
+  }
+
+  if (
+    desc !== undefined &&
+    (typeof desc !== "string" || desc.trim().length < 10)
+  ) {
+    return next({
+      status: 400,
+      message: "Description must be at least 10 characters long",
+    });
+  }
+
+  if (price !== undefined && (typeof price !== "number" || price <= 0)) {
+    return next({
+      status: 400,
+      message: "Price must be a positive number",
+    });
+  }
+
+  next();
+}
