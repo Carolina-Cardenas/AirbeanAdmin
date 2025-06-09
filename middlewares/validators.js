@@ -10,7 +10,6 @@ export function validateAuthBody(req, res, next) {
   }
 }
 
-// Validador para crear un nuevo carrito
 export function validateCartBody(req, res, next) {
   const { prodId, qty } = req.body;
   if (prodId && qty) {
@@ -23,7 +22,6 @@ export function validateCartBody(req, res, next) {
   }
 }
 
-// Validador para crear una nueva orden
 export function validateOrderBody(req, res, next) {
   const { cartId } = req.body;
   if (cartId) {
@@ -36,7 +34,6 @@ export function validateOrderBody(req, res, next) {
   }
 }
 
-// Validador para crear nuevo producto
 export function validateProductBody(req, res, next) {
   const { title, desc, price } = req.body;
 
@@ -74,7 +71,6 @@ export function validateProductBody(req, res, next) {
 export function validateUpdateProductBody(req, res, next) {
   const { title, desc, price } = req.body;
 
-  // Al menos uno de los campos debe estar presente
   if (!title && !desc && !price) {
     return next({
       status: 400,
@@ -82,7 +78,6 @@ export function validateUpdateProductBody(req, res, next) {
     });
   }
 
-  // Validar campos si están presentes
   if (
     title !== undefined &&
     (typeof title !== "string" || title.trim().length === 0)

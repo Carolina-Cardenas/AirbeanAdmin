@@ -1,8 +1,11 @@
 import Product from "../models/product.js";
+import { v4 as uuid } from "uuid";
 
 export async function getMenu() {
   try {
+    console.log("Fetching menu from database...");
     const menu = await Product.find();
+    console.log(menu);
     return menu;
   } catch (error) {
     console.log(error.message);
@@ -58,9 +61,22 @@ export async function updateProduct(prodId, updateData) {
 export async function deleteProduct(prodId) {
   try {
     const result = await Product.deleteOne({ prodId: prodId });
-    return result;
+    if (result.deletedCount === 0) {
+      return {
+        success: false,
+        message: `Didn't found a product with prodId: ${prodId}`,
+      };
+    }
+
+    return {
+      success: true,
+      message: `Product with prodId: ${prodId} deleted correctly.`,
+    };
   } catch (error) {
     console.log("Error deleting product:", error.message);
-    return null;
+    return {
+      success: false,
+      message: `Error deleting product: ${error.message}`,
+    };
   }
 }

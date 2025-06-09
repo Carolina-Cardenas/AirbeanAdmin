@@ -1,13 +1,14 @@
-import express from 'express';
-import dotenv from 'dotenv';
-import mongoose from 'mongoose';
+import express from "express";
+import dotenv from "dotenv";
+import mongoose from "mongoose";
 
-import authRouter from './routes/auth.js';
-import menuRouter from './routes/menu.js';
-import cartRouter from './routes/cart.js';
-import orderRouter from './routes/orders.js';
+import authRouter from "./routes/auth.js";
+import menuRouter from "./routes/menu.js";
+import cartRouter from "./routes/cart.js";
+import orderRouter from "./routes/orders.js";
 
-import errorHandler from './middlewares/errorHandler.js';
+import errorHandler from "./middlewares/errorHandler.js";
+import Product from "./models/product.js";
 
 // Config
 dotenv.config();
@@ -20,17 +21,23 @@ const database = mongoose.connection;
 app.use(express.json());
 
 // Routes
-app.use('/api/auth', authRouter);
-app.use('/api/menu', menuRouter);
-app.use('/api/cart', cartRouter);
-app.use('/api/orders', orderRouter);
+app.use("/api/auth", authRouter);
+app.use("/api/menu", menuRouter);
+app.use("/api/cart", cartRouter);
+app.use("/api/orders", orderRouter);
 
-database.on('error', (error) => console.log(error));
-database.once('connected', () => {
-    console.log('DB Connected');
-    app.listen(PORT, () => {
-        console.log(`Server is running on port ${PORT}`);
-    });
+database.on("error", (error) => console.log(error));
+database.once("connected", async () => {
+  console.log("DB Connected");
+
+  console.log(`🎯 Connected to DB: ${mongoose.connection.name}`);
+
+  const collections = await mongoose.connection.db.listCollections().toArray();
+  const collectionNames = collections.map((col) => col.name);
+
+  app.listen(PORT, () => {
+    console.log(`Server is running on port ${PORT}`);
+  });
 });
 
 app.use(errorHandler);
