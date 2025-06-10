@@ -1,68 +1,86 @@
 import { Router } from "express";
-//import { validateAuthBody } from "../middlewares/validators.js";
-import { getUser, registerUser } from "../services/users.js";
 import { v4 as uuid } from "uuid";
+import bcrypt from "bcrypt";
+import jwt from "jsonwebtoken";
+import dotenv from "dotenv";
+import { getUser, registerUser } from "../services/users.js";
 
+dotenv.config();
 const router = Router();
 
-router.get("/logout", (req, res, next) => {
-  if (global.user) {
-    global.user = null;
-    res.json({
-      success: true,
-      message: "User logged out successfully",
-    });
-  } else {
-    next({
-      status: 400,
-      message: "No user is currently logged in",
-    });
-  }
-});
-// validateAuthBody,
 router.post("/register", async (req, res) => {
-  const { username, password } = req.body;
-  const userType = "user";
-  const result = await registerUser({
-    username: username,
-    password: password,
-    role: userType,
-    userId: `${userType}-${uuid().substring(0, 5)}`,
-  });
-  if (result) {
-    res.status(201).json({
-      success: true,
-      message: "New user registered successfully",
-    });
-  } else {
-    res.status(400).json({
+  const { username, password, role, adminCode } = req.body;
+  if (role === "admin" && adminCode !== process.env.ADMIN_CODE) {
+    return res.status(403).json({
       success: false,
-      message: "Registration unsuccessful",
+      message: "Invalid admin code",
     });
   }
-});
-// validateAuthBody,
-router.post("/login", async (req, res) => {
-  const { username, password } = req.body;
-  const user = await getUser(username);
-  if (user) {
-    if (user.password === password) {
-      global.user = user;
-      res.json({
+  try {
+    const hashedPassword = await bcrypt.hash(password, 10);
+
+    const result = await registerUser({
+      username,
+      password: hashedPassword,
+      role: role || "user",
+      userId: `${role || "user"}-${uuid().substring(0, 5)}`,
+    });
+
+    if (result) {
+      res.status(201).json({
         success: true,
-        message: "User logged in successfully",
+        message: "User registered successfully",
       });
     } else {
       res.status(400).json({
         success: false,
-        message: "Incorrect username and/or password",
+        message: "Failed to register user",
       });
     }
-  } else {
-    res.status(400).json({
-      success: false,
-      message: "No user found",
+  } catch (error) {
+    res.status(500).json({ success: false, message: "Server error" });
+  }
+});
+
+router.post("/login", async (req, res) => {
+  const { username, password } = req.body;
+
+  try {
+    const user = await getUser(username);
+
+    if (!user) {
+      return res.status(400).json({
+        success: false,
+        message: "User not found",
+      });
+    }
+
+    const validPassword = await bcrypt.compare(password, user.password);
+
+    if (!validPassword) {
+      return res.status(401).json({
+        success: false,
+        message: "Incorrect password",
+      });
+    }
+    console.log("JWT_SECRET:", process.env.JWT_SECRET);
+    const token = jwt.sign(
+      {
+        username: user.username,
+        role: user.role,
+        userId: user.userId,
+      },
+      process.env.JWT_SECRET,
+      { expiresIn: "1h" }
+    );
+
+    res.json({
+      success: true,
+      message: "Successful login",
+      token: token,
     });
+  } catch (error) {
+    res.status(500).json({ success: false, message: "Server error" });
   }
 });
 
