@@ -4,37 +4,45 @@ import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
 import dotenv from "dotenv";
 import { getUser, registerUser } from "../services/users.js";
+import verifyToken from "../middlewares/verifyToken.js";
 
 dotenv.config();
 const router = Router();
 
-// **
-//  * @swagger
-//  * /api/auth/register:
-//  *   post:
-//  *     summary: Registrera en ny användare
-//  *     tags: [Auth]
-//  *     requestBody:
-//  *       required: true
-//  *       content:
-//  *         application/json:
-//  *           schema:
-//  *             type: object
-//  *             required: [username, password, role]
-//  *             properties:
-//  *               username:
-//  *                 type: string
-//  *               password:
-//  *                 type: string
-//  *               role:
-//  *                 type: string
-//  *                 example: admin
-//  *     responses:
-//  *       201:
-//  *         description: Användare skapad
-//  *       400:
-//  *         description: Ogiltig registrering
-//  */
+router.get("/logout", verifyToken, (req, res) => {
+  res.json({
+    success: true,
+    message: `${req.user.username} logged out successfully`,
+  });
+});
+
+/**
+ * @swagger
+ * /api/auth/register:
+ *   post:
+ *     summary: Registrera en ny användare
+ *     tags: [Auth]
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required: [username, password, role]
+ *             properties:
+ *               username:
+ *                 type: string
+ *               password:
+ *                 type: string
+ *               role:
+ *                 type: string
+ *                 example: admin
+ *     responses:
+ *       201:
+ *         description: Användare skapad
+ *       400:
+ *         description: Ogiltig registrering
+ */
 router.post("/register", async (req, res) => {
   const { username, password, role, adminCode } = req.body;
   if (role === "admin" && adminCode !== process.env.ADMIN_CODE) {
@@ -69,29 +77,30 @@ router.post("/register", async (req, res) => {
   }
 });
 
-// **
-//  * @swagger
-//  * /api/auth/login:
-//  *   post:
-//  *     summary: Logga in en användare
-//  *     tags: [Auth]
-//  *     requestBody:
-//  *       required: true
-//  *       content:
-//  *         application/json:
-//  *           schema:
-//  *             type: object
-//  *             required: [username, password]
-//  *             properties:
-//  *               username:
-//  *                 type: string
-//  *               password:
-//  *                 type: string
-//  *     responses:
-//  *       200:
-//  *         description: Inloggning lyckades
-//  *       400:
-//  *         description: Ogiltigt användarnamn eller lösenord
+/**
+ * @swagger
+ * /api/auth/login:
+ *   post:
+ *     summary: Logga in en användare
+ *     tags: [Auth]
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required: [username, password]
+ *             properties:
+ *               username:
+ *                 type: string
+ *               password:
+ *                 type: string
+ *     responses:
+ *       200:
+ *         description: Inloggning lyckades
+ *       400:
+ *        description: Ogiltigt användarnamn eller lösenord
+ */
 router.post("/login", async (req, res) => {
   const { username, password } = req.body;
 
