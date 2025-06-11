@@ -6,7 +6,7 @@ import {
 } from "../utils/index.js";
 import { v4 as uuid } from "uuid";
 
-export async function registerUser({ username, password, role }) {
+export async function registerUser({ username, password, role, adminCode }) {
   const existingUser = await User.findOne({ username });
   if (existingUser) {
     throw new Error("Username already exists");

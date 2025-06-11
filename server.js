@@ -9,7 +9,6 @@ import orderRouter from "./routes/orders.js";
 import { swaggerUi, swaggerSpec } from "./config/swagger.js";
 
 import errorHandler from "./middlewares/errorHandler.js";
-import Product from "./models/product.js";
 
 // Config
 dotenv.config();
