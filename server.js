@@ -6,6 +6,7 @@ import authRouter from "./routes/auth.js";
 import menuRouter from "./routes/menu.js";
 import cartRouter from "./routes/cart.js";
 import orderRouter from "./routes/orders.js";
+import { swaggerUi, swaggerSpec } from "./config/swagger.js";
 
 import errorHandler from "./middlewares/errorHandler.js";
 import Product from "./models/product.js";
@@ -25,6 +26,7 @@ app.use("/api/auth", authRouter);
 app.use("/api/menu", menuRouter);
 app.use("/api/cart", cartRouter);
 app.use("/api/orders", orderRouter);
+app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(swaggerSpec));
 
 database.on("error", (error) => console.log(error));
 database.once("connected", async () => {
